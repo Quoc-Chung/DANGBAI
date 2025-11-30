@@ -1,0 +1,14 @@
+Nếu bạn muốn tự động phân quyền granular cho từng API mà không cần rải
+@PreAuthorize, bạn cần dynamic URL/permission mapping từ DB.
+
+Nếu API ít, có thể dùng URL-based mapping kết hợp RoleHierarchy hoặc @PreAuthorize.
+
+Nếu API nhiều và thay đổi quyền thường xuyên → dynamic DB + JWT authorities là cách chuẩn.
+
+| url                 | method | permission  |
+| ------------------- | ------ | ----------- |
+| /api/v1/user/list   | GET    | USER_LIST   |
+| /api/v1/user/delete | DELETE | USER_DELETE |
+| /api/v1/admin/stats | GET    | ADMIN_STATS |
+
+@PreAuthorize("hasAnyRole('ADMIN','USER')")

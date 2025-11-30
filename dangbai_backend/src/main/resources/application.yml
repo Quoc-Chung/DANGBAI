@@ -1,0 +1,89 @@
+server:
+  port: 8088     # Cổng chạy ứng dụng (http://localhost:8088)
+
+spring:
+  application:
+    name: duandangbai # Tên ứng dụng
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:  # bỏ trống nếu không có mật khẩu
+      timeout: 60000  # thời gian chờ kết nối (connection timeout) tới Redis server, tính bằng mili-giây.
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/dangbai?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: Ch@/12345678
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # allowPublicKeyRetrieval=true → FIX lỗi "Public Key Retrieval is not allowed"
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+         dialect: org.hibernate.dialect.MySQLDialect
+
+
+  jackson:
+    default-property-inclusion: non_null   # Không serialize field null
+    deserialization:
+      fail-on-unknown-properties: false    # JSON có field thừa cũng không lỗi
+    date-format: yyyy-MM-dd HH:mm:ss       # Format ngày tháng chuẩn ISO
+    time-zone: Asia/Ho_Chi_Minh            # Múi giờ VN
+  web:
+    error:
+      include-message: always   # luôn trả message lỗi ra json
+      include-binding-errors: always # Trả luôn lỗi validate
+      include-stacktrace: on_param # Chỉ hiển thị stacktrace khi thêm ?trace=true
+      include-exception: false # Không hiển thị tên Exception
+
+logging:
+  level:
+    root: ERROR
+    org.springframework.orm.jpa: ERROR   # Chỉ log lỗi JPA / Hibernate# Chỉ log ERROR trở lên
+    org.springframework.web: INFO
+    org.hibernate: ERROR      # Chỉ log lỗi Hibernate
+    com.yourpackage: DEBUG    # Nếu muốn log chi tiết package của bạn
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"     # Format log console
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+  file:
+    name: logs/application.log   # Log sẽ ghi vào file này trong thư mục /logs
+    pattern: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 3600000           # 1 giờ = 3_600_000 ms
+  refresh-token:
+    expiration: 604800000       # 7 ngày = 604_800_000 ms
+
+
+# Actuator (optional)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+
+
+cloudinary:
+  cloud_name: dfj2mhr9t
+  api_key: 728772244654994
+  api_secret: pV6AxGi0JAqE7r5y99IuTv139Sw
+
+

@@ -1,0 +1,44 @@
+src/main/java/com/quocchung/dangbai/duandangbai/
+├── config/
+│   ├── SecurityConfig.java          # Cấu hình Spring Security
+│   └── DataInitializer.java         # Khởi tạo data mẫu
+├── controller/
+│   └── AuthController.java          # API đăng ký/đăng nhập
+├── dto/
+│   ├── request/
+│   │   ├── LoginRequest.java
+│   │   ├── RegisterRequest.java
+│   │   └── RefreshTokenRequest.java
+│   └── response/
+│       ├── AuthResponse.java
+│       └── ResponseData.java
+├── exception/
+│   ├── BaseException.java
+│   ├── AuthenticationException.java
+│   ├── AuthorizationException.java
+│   ├── ErrorCode.java
+│   └── GlobalExceptionHandler.java
+├── model/
+│   ├── User.java
+│   ├── Role.java
+│   └── Permission.java
+├── repository/
+│   ├── UserRepository.java
+│   ├── RoleRepository.java
+│   └── PermissionRepository.java
+├── security/
+│   ├── JwtService.java              # Xử lý JWT
+│   ├── JwtAuthenticationFilter.java # Filter xác thực JWT
+│   ├── JwtAuthenticationEntryPoint.java
+│   ├── CustomUserDetails.java
+│   ├── CustomUserDetailsService.java
+│   ├── SecurityUtils.java           # Utility methods
+│   ├── annotation/
+│   │   └── RequiresPermission.java
+│   └── aspect/
+│       └── PermissionAspect.java
+├── service/
+│   └── AuthService.java
+└── utils/
+    └── enums/
+        └── AccountStatus.java

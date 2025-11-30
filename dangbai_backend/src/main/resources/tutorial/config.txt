@@ -1,0 +1,22 @@
+
+🔐 Security Core
+
+SecurityConfig.java - Cấu hình Spring Security với JWT
+JwtService.java - Xử lý JWT (tạo, validate, extract claims)
+JwtAuthenticationFilter.java - Filter xác thực mỗi request
+JwtAuthenticationEntryPoint.java - Xử lý lỗi unauthorized
+CustomUserDetails.java - UserDetails tùy chỉnh
+CustomUserDetailsService.java - Load user từ database
+
+🎯 Authentication & Authorization
+
+
+@RequiresPermission - Custom annotation phân quyền
+PermissionAspect.java - AOP xử lý phân quyền
+SecurityUtils.java - Utility methods tiện ích
+
+
+🗄️ Repositories
+
+UserRepository, RoleRepository, PermissionRepository
+

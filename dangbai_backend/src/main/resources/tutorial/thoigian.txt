@@ -1,0 +1,189 @@
+Để tự động set giá trị createdAt và updatedAt trong entity User, bạn có thể dùng lifecycle callback của JPA: @PrePersist và @PreUpdate.
+
+Dưới đây là cách làm chuẩn:
+
+@Entity
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String email;
+
+    private String passwordHash;
+
+    private String username;
+
+    private String displayName;
+
+    private String phone;
+
+    private String avatarUrl;
+
+    @Lob
+    private String bio;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id") // sửa permission_id → role_id
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Notification> notifications = new ArrayList<>();
+
+    /*------------------- Lifecycle Callbacks -------------------*/
+
+    - Hai phương thức này sẽ tự động gọi vào thời điểm lifecycle của entity, bạn
+    không cần phải gọi thủ công gì cả.
+
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}
+
+Giải thích:
+
+  @PrePersist: chạy trước khi insert vào DB, dùng để set createdAt và updatedAt lần đầu.
+  @PreUpdate: chạy trước khi update entity, chỉ update updatedAt.
+
+Lưu ý:
+
+LocalDateTime.now() lấy giờ hệ thống server. Nếu muốn timezone cố định, dùng ZonedDateTime hoặc Clock.
+
+Bonus:
+Nếu bạn có nhiều entity đều muốn auto set createdAt / updatedAt, có thể tạo base class:
+
+@MappedSuperclass
+public abstract class BaseEntity {
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}
+
+
+Rồi các entity khác chỉ cần extends BaseEntity là xong.
+
+Nếu bạn muốn, mình có thể viết luôn version chuẩn hóa User + Role + Permission + auto set giờ để bạn dùng trực tiếp.
+
+Bạn có muốn mình viết luôn không?
+
+
+
+Đúng rồi, ngoài cách dùng @PrePersist / @PreUpdate, Spring Data JPA hỗ trợ một cách tiện hơn bằng các annotation có sẵn:
+
+1️⃣ Dùng @CreatedDate và @LastModifiedDate
+
+Đây là các annotation của Spring Data JPA Auditing.
+
+Bạn chỉ cần bật auditing và annotate các field thời gian, Spring sẽ tự động set giá trị khi save/update.
+
+a. Bật auditing
+
+Trong cấu hình Spring Boot:
+
+@EnableJpaAuditing
+@SpringBootApplication
+public class MyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}
+
+b. Thay đổi entity
+@Entity
+@EntityListeners(AuditingEntityListener.class) // cần cho auditing
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String email;
+
+    private String passwordHash;
+
+    private String username;
+
+    private String displayName;
+
+    private String phone;
+
+    private String avatarUrl;
+
+    @Lob
+    private String bio;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    // Các quan hệ khác...
+}
+
+Giải thích:
+
+@CreatedDate: tự động set khi insert entity mới.
+
+@LastModifiedDate: tự động set khi update entity.
+
+@EntityListeners(AuditingEntityListener.class): cần để Spring Data JPA lắng nghe event.
+
+2️⃣ Ưu điểm
+
+Không cần viết method @PrePersist / @PreUpdate.
+
+Tự động và chuẩn hóa cho tất cả entity.
+
+Dễ mở rộng nếu dùng nhiều entity khác nhau.

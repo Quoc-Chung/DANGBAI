@@ -1,0 +1,12 @@
+✅ Không cần composite key phức tạp
+    ID tự tăng đơn giản hơn rất nhiều.
+
+✅ Một bảng duy nhất chứa cả reaction của Post + Comment
+    Dễ query, dễ thống kê.
+
+✅ Không có xung đột khóa chính
+    Bạn không cần lo postId và commentId đều null hoặc cả 2 cùng có.
+
+✅ Không cần logic @MapsId rắc rối
+    Chỉ dùng @ManyToOne đơn giản.
+

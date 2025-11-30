@@ -1,0 +1,14 @@
+| Loại                     | Checked/Unchecked | Ví dụ                                                                                | Khi nào xảy ra                                          |
+| ------------------------ | ----------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `RuntimeException`       | Unchecked         | `NullPointerException`, `IllegalArgumentException`, `ArrayIndexOutOfBoundsException` | Lỗi tại runtime, tham số sai, null, truy cập ngoài mảng |
+| `IOException`            | Checked           | `FileNotFoundException`, `EOFException`                                              | Lỗi khi đọc/ghi file hoặc network                       |
+| `SQLException`           | Checked           | –                                                                                    | Lỗi khi truy vấn database                               |
+| `ClassNotFoundException` | Checked           | –                                                                                    | Lỗi khi load class không tồn tại                        |
+| `InterruptedException`   | Checked           | –                                                                                    | Lỗi khi thread bị interrupt                             |
+| `NumberFormatException`  | Unchecked         | –                                                                                    | Chuyển String → số nhưng format sai                     |
+
+| Loại Exception   | Checked/Unchecked | Bắt buộc try-catch?   |
+| ---------------- | ----------------- | -------------------   |
+| RuntimeException | Unchecked         | ❌ Không bắt buộc    |
+| IOException      | Checked           | ✅ Bắt buộc          |
+

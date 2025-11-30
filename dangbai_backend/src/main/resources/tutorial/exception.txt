@@ -1,0 +1,481 @@
+# Cấu hình Exception Handling cho Spring Boot - Chuẩn Dự Án Thực Tế
+
+Tôi sẽ hướng dẫn bạn cấu hình exception handling từng bước một cách chuyên nghiệp:
+
+
+
+## Bước 2: Tạo Custom Exception Classes
+
+```java
+// exception/BusinessException.java
+public class BusinessException extends RuntimeException {
+    private final ErrorCode errorCode;
+
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+    }
+
+    public BusinessException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+}
+
+// exception/ResourceNotFoundException.java
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
+
+// exception/ValidationException.java
+public class ValidationException extends RuntimeException {
+    private final Map<String, String> errors;
+
+    public ValidationException(Map<String, String> errors) {
+        super("Validation failed");
+        this.errors = errors;
+    }
+}
+
+```
+
+## Bước 4: Tạo Global Exception Handler
+
+```java
+// exception/GlobalExceptionHandler.java
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBusinessException(
+            BusinessException ex,
+            HttpServletRequest request) {
+
+        log.error("Business exception: {}", ex.getMessage(), ex);
+
+        ApiResponse<Object> response = ApiResponse.error(
+            ex.getErrorCode().getStatus(),
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(ex.getErrorCode().getStatus())
+                .body(response);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
+
+        log.error("Resource not found: {}", ex.getMessage());
+
+        ApiResponse<Object> response = ApiResponse.error(
+            HttpStatus.NOT_FOUND.value(),
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
+            ValidationException ex,
+            HttpServletRequest request) {
+
+        log.error("Validation error: {}", ex.getErrors());
+
+        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Validation failed")
+                .data(ex.getErrors())
+                .timestamp(System.currentTimeMillis())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        log.error("Validation error: {}", errors);
+
+        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Validation failed")
+                .data(errors)
+                .timestamp(System.currentTimeMillis())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String propertyPath = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            errors.put(propertyPath, message);
+        });
+
+        log.error("Constraint violation: {}", errors);
+
+        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Validation failed")
+                .data(errors)
+                .timestamp(System.currentTimeMillis())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Object>> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        log.error("Malformed JSON request: {}", ex.getMessage());
+
+        ApiResponse<Object> response = ApiResponse.error(
+            HttpStatus.BAD_REQUEST.value(),
+            "Malformed JSON request",
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex,
+            HttpServletRequest request) {
+
+        log.error("Method not supported: {}", ex.getMessage());
+
+        ApiResponse<Object> response = ApiResponse.error(
+            HttpStatus.METHOD_NOT_ALLOWED.value(),
+            "Method not supported: " + ex.getMethod(),
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        log.error("Access denied: {}", ex.getMessage());
+
+        ApiResponse<Object> response = ApiResponse.error(
+            HttpStatus.FORBIDDEN.value(),
+            "Access denied",
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+
+        log.error("Data integrity violation: {}", ex.getMessage(), ex);
+
+        String message = "Database constraint violation";
+        if (ex.getCause() instanceof ConstraintViolationException) {
+            message = "Duplicate entry or constraint violation";
+        }
+
+        ApiResponse<Object> response = ApiResponse.error(
+            HttpStatus.CONFLICT.value(),
+            message,
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Object>> handleGenericException(
+            Exception ex,
+            HttpServletRequest request) {
+
+        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
+
+        ApiResponse<Object> response = ApiResponse.error(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "An unexpected error occurred",
+            request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+}
+```
+
+## Bước 5: Cấu hình trong application.yml
+
+```yaml
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+spring:
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+logging:
+  level:
+    com.yourpackage: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
+```
+
+## Bước 6: Ví dụ sử dụng trong Controller
+
+```java
+@RestController
+@RequestMapping("/api/users")
+@Validated
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDTO>> getUserById(@PathVariable Long id) {
+        UserDTO user = userService.findById(id);
+        return ResponseEntity.ok(ApiResponse.success(user));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<UserDTO>> createUser(
+            @Valid @RequestBody CreateUserRequest request) {
+        UserDTO user = userService.createUser(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(user));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDTO>> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserRequest request) {
+        UserDTO user = userService.updateUser(id, request);
+        return ResponseEntity.ok(ApiResponse.success(user));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+}
+```
+
+## Bước 7: Ví dụ sử dụng trong Service
+
+```java
+@Service
+@Slf4j
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public UserDTO findById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    "User not found with id: " + id
+                ));
+        return convertToDTO(user);
+    }
+
+    public UserDTO createUser(CreateUserRequest request) {
+        // Kiểm tra email đã tồn tại
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        try {
+            User user = new User();
+            user.setEmail(request.getEmail());
+            user.setName(request.getName());
+
+            User savedUser = userRepository.save(user);
+            log.info("Created user with id: {}", savedUser.getId());
+
+            return convertToDTO(savedUser);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Database error while creating user", ex);
+            throw new BusinessException(ErrorCode.DATABASE_ERROR);
+        }
+    }
+
+    public UserDTO updateUser(Long id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    "User not found with id: " + id
+                ));
+
+        // Kiểm tra email mới đã tồn tại
+        if (!user.getEmail().equals(request.getEmail()) &&
+            userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+
+        User updatedUser = userRepository.save(user);
+        log.info("Updated user with id: {}", updatedUser.getId());
+
+        return convertToDTO(updatedUser);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found with id: " + id);
+        }
+
+        userRepository.deleteById(id);
+        log.info("Deleted user with id: {}", id);
+    }
+
+    private UserDTO convertToDTO(User user) {
+        // Convert logic
+        return new UserDTO();
+    }
+}
+```
+
+## Bước 8: Thêm Dependencies vào pom.xml
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <optional>true</optional>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+</dependencies>
+```
+
+## Kết quả Response mẫu:
+
+**Success Response:**
+```json
+{
+  "status": 200,
+  "message": "Success",
+  "data": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "timestamp": 1701234567890,
+  "path": "/api/users/1"
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": 404,
+  "message": "User not found with id: 999",
+  "data": null,
+  "timestamp": 1701234567890,
+  "path": "/api/users/999"
+}
+```
+
+**Validation Error Response:**
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "data": {
+    "email": "Email is required",
+    "name": "Name must be between 2 and 50 characters"
+  },
+  "timestamp": 1701234567890,
+  "path": "/api/users"
+}
+```
+
+Cấu hình này đảm bảo:
+✅ Tất cả exception đều được bắt và xử lý
+✅ Không bao giờ crash ứng dụng
+✅ Response luôn theo chuẩn thống nhất
+✅ Log đầy đủ để debug
+✅ Dễ mở rộng và maintain

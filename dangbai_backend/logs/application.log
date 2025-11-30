@@ -1,0 +1,29 @@
+2025-12-01 00:45:28 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-01 00:45:28 [http-nio-8088-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 6 ms
+2025-12-01 00:51:26 [http-nio-8088-exec-6] ERROR c.q.d.d.c.JwtAuthenticationEntryPoint - Unauthorized error: Full authentication is required to access this resource
+2025-12-01 00:59:09 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-01 00:59:09 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 4 ms
+2025-12-01 00:59:09 [http-nio-8088-exec-1] ERROR c.q.d.d.c.JwtAuthenticationEntryPoint - Unauthorized error: Full authentication is required to access this resource
+2025-12-01 01:18:11 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-01 01:18:11 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-12-01 01:29:49 [http-nio-8088-exec-6] ERROR c.q.d.d.c.JwtAuthenticationEntryPoint - Unauthorized error: Full authentication is required to access this resource
+2025-12-01 01:36:55 [restartedMain] ERROR o.s.b.t.s.DeferredServletContainerInitializers - Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'jwtAuthenticationFilter' defined in file [D:\NAM 4\DacTaPhanMem\CUOIKI\BACKEND\duandangbai\target\classes\com\quocchung\dangbai\duandangbai\config\JwtAuthenticationFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.quocchung.dangbai.duandangbai.service.JwtService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2025-12-01 01:36:55 [restartedMain] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.quocchung.dangbai.duandangbai.config.JwtAuthenticationFilter required a bean of type 'com.quocchung.dangbai.duandangbai.service.JwtService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.quocchung.dangbai.duandangbai.service.JwtService' in your configuration.
+
+2025-12-01 01:39:51 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-01 01:39:51 [http-nio-8088-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-12-01 01:39:51 [http-nio-8088-exec-1] ERROR c.q.d.d.c.JwtAuthenticationEntryPoint - Unauthorized error: Full authentication is required to access this resource
+2025-12-01 01:39:53 [http-nio-8088-exec-3] ERROR c.q.d.d.c.JwtAuthenticationEntryPoint - Unauthorized error: Full authentication is required to access this resource
