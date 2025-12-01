@@ -78,12 +78,7 @@ management:
   endpoint:
     health:
       show-details: always
-
-
-
-cloudinary:
-  cloud_name: dfj2mhr9t
-  api_key: 728772244654994
-  api_secret: pV6AxGi0JAqE7r5y99IuTv139Sw
+file:
+  upload-dir: uploads
 
 

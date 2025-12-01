@@ -17,17 +17,15 @@ import com.quocchung.dangbai.duandangbai.repository.CategoryRepository;
 import com.quocchung.dangbai.duandangbai.repository.PostMediaRepository;
 import com.quocchung.dangbai.duandangbai.repository.PostRepository;
 import com.quocchung.dangbai.duandangbai.repository.UserRepository;
-import com.quocchung.dangbai.duandangbai.service.ICloudinaryService;
 import com.quocchung.dangbai.duandangbai.service.IPostService;
 import com.quocchung.dangbai.duandangbai.service.NotificationService;
+import com.quocchung.dangbai.duandangbai.service.UploadFileService;
 import com.quocchung.dangbai.duandangbai.utils.enums.MediaType;
 import com.quocchung.dangbai.duandangbai.utils.enums.PostStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,24 +45,24 @@ public class PostServiceImpl implements IPostService {
   private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
   private final PostRepository postRepository;
-  private final ICloudinaryService cloudinaryService;
   private final PostMediaRepository postMediaRepository;
   private final NotificationService notificationService;
+  private final UploadFileService uploadFileService;
+
 
   @Override
   public PostResponse createPost(CreatePostRequest request, List<MultipartFile> images,
       Long userId) {
 
-    // Trích xuất tác giả
-    User author = userRepository.findById(userId).orElseThrow(() -> new UserException(
-       ErrorCode.USER_NOT_FOUND));
+    User author = userRepository.findById(userId)
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
     Category category = null;
-    if(request.getCategoryId() != null){
-      category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new CategoryException(
-          ErrorCode.CATEGORY_NOT_FOUND
-      ));
+    if (request.getCategoryId() != null) {
+      category = categoryRepository.findById(request.getCategoryId())
+          .orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
+
     validateImages(images);
 
     Post post = Post.builder()
@@ -78,16 +76,38 @@ public class PostServiceImpl implements IPostService {
         .build();
     postRepository.save(post);
 
-    List<PostMedia> mediaList = uploadAndCreateMedia(images, post);
+    // Upload local
+    List<PostMedia> mediaList = saveLocalFiles(images, post);
     postMediaRepository.saveAll(mediaList);
 
     post.setMedia(mediaList);
-    // Tạo thông báo
+
     notificationService.notifyPostCreate(post);
 
-    log.info("Tạo bài đăng thành công - ID: {}, Số ảnh: {}", post.getId(), mediaList.size());
     return mapToPostResponse(post);
+  }
 
+  private List<PostMedia> saveLocalFiles(List<MultipartFile> images, Post post) {
+    List<PostMedia> mediaList = new ArrayList<>();
+
+    for (int i = 0; i < images.size(); i++) {
+      MultipartFile file = images.get(i);
+
+      // Upload file lên server
+      String url = uploadFileService.saveFile(file, post.getId());
+
+      PostMedia media = PostMedia.builder()
+          .post(post)
+          .type(MediaType.IMAGE)
+          .url(url)
+          .thumbnailUrl(url)
+          .position(i)
+          .build();
+
+      mediaList.add(media);
+    }
+
+    return mediaList;
   }
 
   private void validateImages(List<MultipartFile> images) {
@@ -99,71 +119,6 @@ public class PostServiceImpl implements IPostService {
     }
   }
 
-  /**
-   * Upload ảnh song song và tạo PostMedia entities
-   */
-  private List<PostMedia> uploadAndCreateMedia(List<MultipartFile> images, Post post) {
-    // Upload tất cả ảnh song song
-    List<CompletableFuture<Map<String, Object>>> uploadFutures = images.stream()
-        .map(cloudinaryService::uploadImageAsync)
-        .collect(Collectors.toList());
-
-    // Đợi tất cả upload hoàn thành
-    CompletableFuture.allOf(uploadFutures.toArray(new CompletableFuture[0])).join();
-
-    // Tạo PostMedia entities từ kết quả upload
-    List<PostMedia> mediaList = new ArrayList<>();
-
-    for (int i = 0; i < uploadFutures.size(); i++) {
-      try {
-        Map<String, Object> uploadResult = uploadFutures.get(i).get();
-
-        PostMedia media = PostMedia.builder()
-            .post(post)
-            .type(MediaType.IMAGE)
-            .url((String) uploadResult.get("secure_url"))
-            .thumbnailUrl(getEagerUrl(uploadResult))
-            .width((Integer) uploadResult.get("width"))
-            .height((Integer) uploadResult.get("height"))
-            .position(i)
-            .build();
-
-        mediaList.add(media);
-
-      } catch (Exception e) {
-        log.error("Lỗi lấy kết quả upload: {}", e.getMessage());
-        // Rollback: xóa các ảnh đã upload
-        rollbackUploadedImages(mediaList);
-        throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-      }
-    }
-
-    return mediaList;
-  }
-
-  /**
-   * Lấy URL thumbnail từ eager transformation
-   */
-  private String getEagerUrl(Map<String, Object> uploadResult) {
-    List<Map<String, Object>> eager =
-        (List<Map<String, Object>>) uploadResult.get("eager");
-    if (eager != null && !eager.isEmpty()) {
-      return (String) eager.get(0).get("secure_url");
-    }
-    return (String) uploadResult.get("secure_url");
-  }
-
-  /**
-   * Rollback: Xóa các ảnh đã upload khi có lỗi
-   */
-  private void rollbackUploadedImages(List<PostMedia> mediaList) {
-    mediaList.forEach(media -> {
-      String publicId = cloudinaryService.extractPublicId(media.getUrl());
-      if (publicId != null) {
-        cloudinaryService.deleteImage(publicId);
-      }
-    });
-  }
   /**
    * Phê duyệt bài viết dành cho admin
    * @param request

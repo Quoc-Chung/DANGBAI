@@ -35,6 +35,7 @@ public class Notification {
 
 
   @Enumerated(EnumType.STRING)
+  @Column(length = 500)
   private NotificationType type;
 
   @ManyToOne(fetch = FetchType.LAZY)

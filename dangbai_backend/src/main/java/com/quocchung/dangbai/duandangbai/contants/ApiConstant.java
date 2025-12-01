@@ -7,6 +7,7 @@ public class ApiConstant {
   public static final String POST = "/api/v1/posts";
   public static final String NOTIFICATION = "/api/v1/notification";
   public static final String USER = "/api/v1/user";
+  public static final String CATEGORY = "/api/v1/category";
 
   public static final String REGISTER =  "/register";          // POST
   public static final String LOGIN = "/login";                // POST
@@ -35,5 +36,8 @@ public class ApiConstant {
 
   /* ======================== USER ==============================*/
   public static final String USER_PROFILE = "/profile";
+
+  /*=========================CATEGORY ============================*/
+  public static final String CATEGORY_ALL = "/all";
 
 }

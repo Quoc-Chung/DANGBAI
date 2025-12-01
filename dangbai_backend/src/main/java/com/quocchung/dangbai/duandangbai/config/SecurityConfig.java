@@ -35,7 +35,8 @@ public class SecurityConfig {
                 "/swagger-ui.html",
                 "/v3/api-docs/**",
                 "/v3/api-docs.yaml",
-                "/api-docs/**").permitAll()
+                "/api-docs/**",
+                "/uploads/posts/**").permitAll()
             .anyRequest().authenticated()
         )
         .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
