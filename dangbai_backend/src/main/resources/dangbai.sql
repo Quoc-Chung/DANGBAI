@@ -17,6 +17,51 @@ CREATE TABLE users (
                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE roles (
+                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                       name VARCHAR(100) NOT NULL UNIQUE,
+                       description TEXT,
+                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE permissions (
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             name VARCHAR(150) NOT NULL UNIQUE,
+                             description TEXT,
+                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE user_roles (
+                            user_id BIGINT NOT NULL,
+                            role_id BIGINT NOT NULL,
+                            PRIMARY KEY (user_id, role_id),
+
+                            FOREIGN KEY (user_id) REFERENCES users(id)
+                                ON DELETE CASCADE
+                                ON UPDATE NO ACTION,
+
+                            FOREIGN KEY (role_id) REFERENCES roles(id)
+                                ON DELETE CASCADE
+                                ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE role_permissions (
+                                  role_id BIGINT NOT NULL,
+                                  permission_id BIGINT NOT NULL,
+                                  PRIMARY KEY (role_id, permission_id),
+
+                                  FOREIGN KEY (role_id) REFERENCES roles(id)
+                                      ON DELETE CASCADE
+                                      ON UPDATE NO ACTION,
+
+                                  FOREIGN KEY (permission_id) REFERENCES permissions(id)
+                                      ON DELETE CASCADE
+                                      ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 -- 2. categories
 CREATE TABLE categories (
                             id INT AUTO_INCREMENT PRIMARY KEY,

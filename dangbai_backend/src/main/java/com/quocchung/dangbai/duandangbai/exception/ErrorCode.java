@@ -27,6 +27,7 @@ public enum ErrorCode {
   INVALID_PASSWORD_FORMAT(2005, 400, "Password must be at least 8 characters with uppercase, lowercase, number and special character"),
   INVALID_USERNAME_FORMAT(2006, 400, "Username must be 3-50 characters, alphanumeric and underscore only"),
   INVALID_URL_FORMAT(2007, 400, "Invalid URL format"),
+  INVALID_STATUS(2015, 400, "Trạng thái không hợp lệ"),
   INVALID_DATE_FORMAT(2008, 400, "Invalid date format"),
   INVALID_ENUM_VALUE(2009, 400, "Invalid enum value"),
   VALUE_TOO_SHORT(2010, 400, "Value is too short"),

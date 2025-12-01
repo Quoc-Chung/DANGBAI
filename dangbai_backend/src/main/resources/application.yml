@@ -46,13 +46,13 @@ spring:
       include-stacktrace: on_param # Chỉ hiển thị stacktrace khi thêm ?trace=true
       include-exception: false # Không hiển thị tên Exception
 
-logging:
-  level:
-    root: ERROR
-    org.springframework.orm.jpa: ERROR   # Chỉ log lỗi JPA / Hibernate# Chỉ log ERROR trở lên
-    org.springframework.web: INFO
-    org.hibernate: ERROR      # Chỉ log lỗi Hibernate
-    com.yourpackage: DEBUG    # Nếu muốn log chi tiết package của bạn
+#logging:
+#  level:
+#    root: ERROR
+#    org.springframework.orm.jpa: ERROR   # Chỉ log lỗi JPA / Hibernate# Chỉ log ERROR trở lên
+#    org.springframework.web: INFO
+#    org.hibernate: ERROR      # Chỉ log lỗi Hibernate
+#    com.yourpackage: DEBUG    # Nếu muốn log chi tiết package của bạn
 
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"     # Format log console
