@@ -1,6 +1,6 @@
 // src/components/post/PostCard.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { FaMapMarkerAlt, FaClock, FaShare, FaComment, FaEllipsisH, FaPhone, FaEnvelope, FaUser } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaShare, FaComment, FaEllipsisH, FaPhone, FaEnvelope, FaUser } from 'react-icons/fa';
 import { ReactionButton } from './ReactionButton';
 import { CommentSection } from './CommentSection';
 import { ReactionType } from '../../types/post';
@@ -92,32 +92,32 @@ export const PostCard: React.FC<PostCardProps> = ({
   const userReaction = getUserReaction();
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mb-6">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md border border-gray-200 overflow-hidden mb-4 transition-all duration-200">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="px-4 py-3 border-b border-gray-200">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-1">
             <img
               src={getAvatarUrl()}
               alt={post.displayName}
-              className="w-12 h-12 rounded-full object-cover border-2 border-gray-500"
+              className="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
             />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-gray-800 text-lg">{post.displayName}</h3>
+                <h3 className="font-semibold text-gray-900 text-[15px] cursor-pointer hover:underline">
+                  {post.displayName}
+                </h3>
                 {post.condition && (
-                  <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
                     {post.condition}
                   </span>
                 )}
               </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+              <div className="flex items-center space-x-1 text-[13px] text-gray-500 mt-0.5">
+                <span>{getTimeAgo(post.createdAt)}</span>
+                <span>·</span>
                 <span className="flex items-center">
-                  <FaClock className="mr-1" />
-                  {getTimeAgo(post.createdAt)}
-                </span>
-                <span className="flex items-center">
-                  <FaMapMarkerAlt className="mr-1 ml-2" />
+                  <FaMapMarkerAlt className="mr-1 text-xs" />
                   {post.location}
                 </span>
               </div>
@@ -205,71 +205,143 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
       </div>
 
-      {/* Title */}
-      <div className="px-4 pt-4 pb-2">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">{post.title}</h2>
+      {/* Title & Price */}
+      <div className="px-4 pt-3 pb-2">
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-[17px] font-semibold text-gray-900 leading-snug flex-1">
+            {post.title}
+          </h2>
+          {post.price && (
+            <div className="flex-shrink-0 text-right">
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold text-blue-600">
+                  {formatPrice(post.price)}
+                </span>
+                {post.oldPrice && (
+                  <span className="text-sm text-gray-400 line-through">
+                    {formatPrice(post.oldPrice)}
+                  </span>
+                )}
+              </div>
+              {post.oldPrice && (
+                <p className="text-xs text-green-600 font-medium mt-0.5">
+                  Giảm {Math.round(((post.oldPrice - post.price) / post.oldPrice) * 100)}%
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-4">
-        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-      </div>
-
-      {/* Price (if available) */}
-      {post.price && (
-        <div className="px-4 pb-4">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-            <div className="flex items-baseline space-x-3">
-                      <span className="text-3xl font-bold text-gray-700">
-                {formatPrice(post.price)}
-              </span>
-              {post.oldPrice && (
-                <span className="text-lg text-gray-400 line-through">
-                  {formatPrice(post.oldPrice)}
-                </span>
-              )}
-            </div>
-            {post.oldPrice && (
-              <p className="text-sm text-green-600 font-medium mt-1">
-                Giảm {Math.round(((post.oldPrice - post.price) / post.oldPrice) * 100)}%
-              </p>
-            )}
-          </div>
+      {post.content && (
+        <div className="px-4 pb-3">
+          <p className="text-[15px] text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+            {post.content}
+          </p>
         </div>
       )}
 
-      {/* Images */}
+      {/* Images - Facebook Style Layout */}
       {post.images && post.images.length > 0 && (
-        <div className={`px-4 pb-4 ${post.images.length === 1 ? '' : 'grid gap-2'}`}>
+        <div className="px-4 pb-4">
           {post.images.length === 1 ? (
-            <img
-              src={post.images[0]}
-              alt={post.title}
-              className="w-full rounded-lg object-cover max-h-96"
-            />
-          ) : post.images.length === 2 ? (
-            <div className="grid grid-cols-2 gap-2">
-              {post.images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`${post.title} ${idx + 1}`}
-                  className="w-full h-64 rounded-lg object-cover"
-                />
-              ))}
+            // Single image - Full width, large
+            <div className="w-full rounded-lg overflow-hidden bg-gray-100">
+              <img
+                src={post.images[0]}
+                alt={post.title}
+                className="w-full h-auto max-h-[600px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Image+Not+Found';
+                }}
+              />
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {post.images.slice(0, 4).map((img, idx) => (
-                <div key={idx} className={idx === 3 && post.images.length > 4 ? 'relative' : ''}>
+          ) : post.images.length === 2 ? (
+            // Two images - Side by side
+            <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+              {post.images.map((img, idx) => (
+                <div key={idx} className="bg-gray-100">
                   <img
                     src={img}
                     alt={`${post.title} ${idx + 1}`}
-                    className="w-full h-48 rounded-lg object-cover"
+                    className="w-full h-[400px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : post.images.length === 3 ? (
+            // Three images - Facebook style: Large left, 2 small right
+            <div className="grid grid-cols-3 gap-1 rounded-lg overflow-hidden">
+              <div className="col-span-2 row-span-2 bg-gray-100">
+                <img
+                  src={post.images[0]}
+                  alt={`${post.title} 1`}
+                  className="w-full h-full min-h-[500px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x500?text=Image+Not+Found';
+                  }}
+                />
+              </div>
+              <div className="bg-gray-100">
+                <img
+                  src={post.images[1]}
+                  alt={`${post.title} 2`}
+                  className="w-full h-[249px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x250?text=Image+Not+Found';
+                  }}
+                />
+              </div>
+              <div className="bg-gray-100">
+                <img
+                  src={post.images[2]}
+                  alt={`${post.title} 3`}
+                  className="w-full h-[249px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x250?text=Image+Not+Found';
+                  }}
+                />
+              </div>
+            </div>
+          ) : post.images.length === 4 ? (
+            // Four images - Perfect 2x2 grid
+            <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+              {post.images.map((img, idx) => (
+                <div key={idx} className="bg-gray-100">
+                  <img
+                    src={img}
+                    alt={`${post.title} ${idx + 1}`}
+                    className="w-full h-[300px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // More than 4 images - 2x2 grid with overlay
+            <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+              {post.images.slice(0, 4).map((img, idx) => (
+                <div 
+                  key={idx} 
+                  className={`bg-gray-100 ${idx === 3 ? 'relative' : ''}`}
+                >
+                  <img
+                    src={img}
+                    alt={`${post.title} ${idx + 1}`}
+                    className="w-full h-[300px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                    }}
                   />
                   {idx === 3 && post.images.length > 4 && (
-                    <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer hover:bg-black/70 transition">
+                      <span className="text-white font-bold text-3xl">
                         +{post.images.length - 4}
                       </span>
                     </div>

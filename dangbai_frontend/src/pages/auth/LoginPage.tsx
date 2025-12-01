@@ -81,8 +81,8 @@ export const LoginPage: React.FC = () => {
 
             {/* Description */}
             <p className="text-white/90 text-base leading-relaxed text-center max-w-xs mb-6">
-              Quốc Chung giới thiệu bạn -  Một nền tảng mua bán đồ công nghệ cũ uy tín hàng đầu. 
-              Kết nối người mua và người bán một cách nhanh chóng, an toàn và tiện lợi.
+              TỪ QUỐC CHUNG --- CNTT1 
+                 <p>ĐẶC TẢ PHẦN MỀM </p>
             </p>
 
             {/* Learn More Button */}

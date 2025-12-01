@@ -16,6 +16,7 @@ import { HomePage } from './pages/user/HomePage';
 
 // Admin Pages
 import { DashboardPage } from './pages/admin/DashboardPage';
+import { PostManagementPage } from './pages/admin/PostManagementPage';
 
 function App() {
   return (
@@ -42,6 +43,14 @@ function App() {
             element={
               <AdminRoute>
                 <DashboardPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/posts"
+            element={
+              <AdminRoute>
+                <PostManagementPage />
               </AdminRoute>
             }
           />
