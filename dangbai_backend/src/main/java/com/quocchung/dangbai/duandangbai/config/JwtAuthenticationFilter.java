@@ -32,17 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-
+      // lấy ra toan bộ cái header: Authorization :Bearer token
     final String authHeader = request.getHeader("Authorization");
-
+    // nếu nó null và không bắt đầu bằng Bearer
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       filterChain.doFilter(request, response);
       return;
     }
-
+    // lấy ra token
     final String token = authHeader.substring(7).trim();
     String username;
-
     try {
       username = jwtService.extractUsername(token);
     } catch (ExpiredJwtException e) {
@@ -55,13 +54,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
 
+    // nếu lấy được tên và
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
       UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
       boolean tokenValid = jwtService.isTokenValid(token, userDetails)
                            && tokenStorageService.isAccessTokenValid(token);
-
       if (tokenValid) {
         UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -73,7 +70,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return;
       }
     }
-
     filterChain.doFilter(request, response);
   }
 

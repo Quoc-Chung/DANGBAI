@@ -120,5 +120,17 @@ public class PostController {
     return ApiResponse.success("Lấy chi tiết bài đăng thành công", response);
   }
 
+  @GetMapping("/lstpost")
+    public ApiResponse<PageResponse<PostResponse>> getPostsByStatus(
+            @RequestHeader("Authorization") String header,
+            @RequestParam(required = true) String status ,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "20") Integer size){
+      String token = header.substring(7);
+      Long userId = jwtService.extractUserId(token);
+      PageResponse<PostResponse> pageResponse = postService.getPostsByStatus( userId,status, page, size);
+      return ApiResponse.success("Lấy thông tin thành công",  pageResponse);
+  }
+
 }
 

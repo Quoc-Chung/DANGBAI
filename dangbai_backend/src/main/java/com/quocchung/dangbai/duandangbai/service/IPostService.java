@@ -36,4 +36,10 @@ public interface IPostService {
    */
   PostResponse getPostById(Long postId);
 
+
+    /**
+     *
+     */
+    PageResponse<PostResponse> getPostsByStatus(Long userId,String status, Integer page, Integer size );
+
 }

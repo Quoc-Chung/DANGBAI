@@ -241,7 +241,40 @@ public class PostServiceImpl implements IPostService {
     return mapToPostResponse(post);
   }
 
-  public  PostResponse mapToPostResponse(Post post) {
+    @Override
+    public PageResponse<PostResponse> getPostsByStatus(Long userId, String statusStr, Integer page, Integer size) {
+        PostStatus status = null;
+        if (statusStr != null && !statusStr.isEmpty()) {
+            try {
+                status = PostStatus.valueOf(statusStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new AppException(ErrorCode.INVALID_FORMAT);
+            }
+        }
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> postPage = null;
+        if (userId != null && status != null) {
+            postPage = postRepository.findByUserAndStatus(userId, status, pageable);
+        }
+        List<PostResponse> content = postPage.getContent().stream()
+                .map(this::mapToPostResponse)
+                .collect(Collectors.toList());
+        return PageResponse.<PostResponse>builder()
+                .items(content)
+                .page(postPage.getNumber())
+                .size(postPage.getSize())
+                .totalItems(postPage.getTotalElements())
+                .totalPages(postPage.getTotalPages())
+                .hasNext(postPage.hasNext())
+                .hasPrevious(postPage.hasPrevious())
+                .build();
+    }
+
+
+
+
+    public  PostResponse mapToPostResponse(Post post) {
     if (post == null) return null;
 
     return PostResponse.builder()
@@ -291,5 +324,4 @@ public class PostServiceImpl implements IPostService {
         .totalComments(post.getComments() != null ? (long) post.getComments().size() : 0L)
         .build();
   }
-
 }

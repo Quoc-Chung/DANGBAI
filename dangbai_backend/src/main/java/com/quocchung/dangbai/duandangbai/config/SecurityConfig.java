@@ -22,7 +22,6 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-  private final CustomUserDetailsService userDetailsService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
